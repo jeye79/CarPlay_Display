@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">야간 밝기</string>
+    <string name="notif_channel_name">야간 화면 밝기</string>
+    <string name="notif_title">야간 밝기 실행 중</string>
+    <string name="notif_text">터치하여 상단 시계 및 밝기 조절</string>
+</resources>

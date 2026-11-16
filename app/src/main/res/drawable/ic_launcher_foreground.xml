@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Minimal crescent moon for night screen dimmer -->
+    <path
+        android:fillColor="#F5C469"
+        android:pathData="M62.5,33.2C50.6,34.4 41.3,44.4 41.3,56.6c0,12.9 10.5,23.4 23.4,23.4c4.9,0 9.4,-1.5 13.1,-4.1c-10.7,-1.1 -19.1,-10.1 -19.1,-21.1c0,-8.9 5.5,-16.5 13.3,-19.6C69.1,33.9 65.9,32.9 62.5,33.2z" />
+</vector>

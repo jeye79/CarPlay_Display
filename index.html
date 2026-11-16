@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>야간 밝기 (OttocastDimmer) — 현대 넥소 × Ottocast Pro 야간 시계 & 밝기 앱</title>
+  <meta name="description" content="현대 넥소 차량용 Ottocast Pro 안드로이드 박스를 위한 초심플 상단 시계, 화면 밝기 조절, 블루라이트 차단, 100% 블랙 화면 끄기 APK 무료 다운로드." />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <style>
+    :root {
+      --bg-base: #04060a;
+      --bg-elevated: rgba(16, 20, 29, 0.72);
+      --border-subtle: rgba(255, 255, 255, 0.1);
+      --border-glow: rgba(0, 229, 255, 0.35);
+      --text-primary: #f4f7fb;
+      --text-secondary: #98a4b8;
+      --cyan: #00e5ff;
+      --blue: #4f7cff;
+      --amber: #ffb74d;
+      --emerald: #34d399;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--bg-base);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Ambient Animated Aurora & Cockpit Grid */
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .grid-layer {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 15%, #000 35%, transparent 100%);
+    }
+
+    .orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(110px);
+      opacity: 0.42;
+      animation: floatOrb 16s ease-in-out infinite alternate;
+    }
+
+    .orb-1 {
+      width: 520px;
+      height: 520px;
+      top: -160px;
+      left: -100px;
+      background: radial-gradient(circle, rgba(0, 229, 255, 0.55), transparent 70%);
+    }
+
+    .orb-2 {
+      width: 540px;
+      height: 540px;
+      top: 40px;
+      right: -150px;
+      background: radial-gradient(circle, rgba(79, 124, 255, 0.5), transparent 70%);
+      animation-delay: -6s;
+    }
+
+    .orb-3 {
+      width: 460px;
+      height: 460px;
+      bottom: -140px;
+      left: 35%;
+      background: radial-gradient(circle, rgba(255, 183, 77, 0.32), transparent 70%);
+      animation-delay: -11s;
+    }
+
+    @keyframes floatOrb {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(35px, -28px) scale(1.1); }
+    }
+
+    .container {
+      width: min(1160px, 92vw);
+      margin: 0 auto;
+    }
+
+    /* Top Nav */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      background: rgba(4, 6, 10, 0.72);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #161b26, #0d1017);
+      border: 1px solid rgba(255, 183, 77, 0.35);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 0 22px rgba(255, 183, 77, 0.16);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 999px;
+      transition: color 0.2s, background 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-dl-btn {
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #04070d;
+      background: linear-gradient(135deg, var(--cyan), #72a1ff);
+      padding: 9px 18px;
+      border-radius: 999px;
+      box-shadow: 0 4px 22px rgba(0, 229, 255, 0.28);
+      transition: transform 0.2s, box-shadow 0.2s;
+      white-space: nowrap;
+    }
+
+    .nav-dl-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(0, 229, 255, 0.45);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 72px 0 42px;
+      text-align: center;
+    }
+
+    .pill-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 15px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(0, 229, 255, 0.28);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: var(--cyan);
+      margin-bottom: 24px;
+      box-shadow: 0 0 28px rgba(0, 229, 255, 0.1);
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(1.4); }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.1rem, 4.8vw, 3.7rem);
+      font-weight: 800;
+      line-height: 1.18;
+      letter-spacing: -0.035em;
+      margin-bottom: 20px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(125deg, #ffffff 15%, var(--cyan) 55%, var(--amber) 95%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero p.subtitle {
+      max-width: 700px;
+      margin: 0 auto 34px;
+      font-size: clamp(1rem, 1.8vw, 1.18rem);
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 26px;
+    }
+
+    .btn-primary-glow {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 32px;
+      border-radius: 16px;
+      text-decoration: none;
+      color: #05080f;
+      font-weight: 800;
+      font-size: 1.05rem;
+      background: linear-gradient(135deg, #00e5ff 0%, #5b8cff 55%, #ffb74d 100%);
+      background-size: 180% 180%;
+      box-shadow: 0 12px 38px rgba(0, 229, 255, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      transition: transform 0.25s ease, box-shadow 0.25s ease, background-position 0.4s ease;
+      overflow: hidden;
+    }
+
+    .btn-primary-glow::after {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -60%;
+      width: 45%;
+      height: 200%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+      transform: rotate(22deg);
+      animation: sheen 4.2s infinite;
+    }
+
+    @keyframes sheen {
+      0%, 55% { left: -60%; }
+      100% { left: 135%; }
+    }
+
+    .btn-primary-glow:hover {
+      transform: translateY(-2px) scale(1.015);
+      background-position: 100% 50%;
+      box-shadow: 0 18px 46px rgba(0, 229, 255, 0.48);
+    }
+
+    .btn-secondary-glass {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 15px 24px;
+      border-radius: 16px;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 600;
+      font-size: 0.98rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      backdrop-filter: blur(12px);
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+
+    .btn-secondary-glass:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.28);
+      transform: translateY(-2px);
+    }
+
+    .spec-strip {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px 18px;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    .spec-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .spec-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--amber);
+    }
+
+    /* Interactive Car Display Simulator */
+    .simulator-section {
+      padding: 28px 0 74px;
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .section-eyebrow {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-size: clamp(1.5rem, 3vw, 2.2rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+    }
+
+    .section-desc {
+      color: var(--text-secondary);
+      font-size: 0.98rem;
+      margin-top: 8px;
+    }
+
+    .cockpit-bezel {
+      position: relative;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 16px;
+      border-radius: 30px;
+      background: linear-gradient(145deg, #1b202b, #0c0f16);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      box-shadow:
+        0 34px 90px rgba(0, 0, 0, 0.78),
+        0 0 80px rgba(0, 229, 255, 0.12),
+        inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    }
+
+    .cockpit-screen {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 8.5;
+      min-height: 330px;
+      border-radius: 18px;
+      overflow: hidden;
+      background: #0d1726;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    /* Simulated Bright Night Navigation Screen */
+    .nav-ui-layer {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 65% 42%, rgba(56, 189, 248, 0.22), transparent 55%),
+        linear-gradient(135deg, #16263d 0%, #1d3557 48%, #203f66 100%);
+      overflow: hidden;
+    }
+
+    .map-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0.92;
+    }
+
+    .nav-turn-card {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      background: rgba(12, 23, 41, 0.88);
+      border: 1px solid rgba(110, 203, 255, 0.45);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+    }
+
+    .turn-arrow {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(0, 229, 255, 0.2);
+      display: grid;
+      place-items: center;
+      color: #6ceeff;
+      font-weight: 800;
+      font-size: 1.25rem;
+    }
+
+    .turn-meta strong {
+      display: block;
+      font-size: 1rem;
+      color: #ffffff;
+    }
+
+    .turn-meta span {
+      font-size: 0.78rem;
+      color: #a9d6ff;
+    }
+
+    .nav-speed-card {
+      position: absolute;
+      bottom: 18px;
+      left: 18px;
+      background: rgba(255, 255, 255, 0.92);
+      color: #0c1420;
+      border-radius: 14px;
+      padding: 10px 16px;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+    }
+
+    .nav-speed-card .num {
+      font-size: 1.65rem;
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .nav-speed-card .unit {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #4b5563;
+    }
+
+    .nav-media-card {
+      position: absolute;
+      bottom: 18px;
+      right: 18px;
+      background: rgba(244, 248, 255, 0.9);
+      color: #111827;
+      border-radius: 14px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+    }
+
+    .nav-media-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #2563eb;
+      animation: pulseDot 1.6s infinite;
+    }
+
+    .nav-media-card strong {
+      display: block;
+      font-size: 0.85rem;
+      line-height: 1.2;
+    }
+
+    .nav-media-card span {
+      font-size: 0.72rem;
+      color: #4b5563;
+    }
+
+    /* Real-time Dimmer + Blue-light Filter Layer */
+    .sim-filter-layer {
+      position: absolute;
+      inset: 0;
+      z-index: 15;
+      pointer-events: none;
+      transition: background-color 0.1s linear, opacity 0.15s ease;
+    }
+
+    .sim-filter-layer.blackout {
+      pointer-events: auto;
+      background-color: #000000 !important;
+      opacity: 1 !important;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .blackout-wake-hint {
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      color: rgba(255, 255, 255, 0.28);
+      font-size: 0.85rem;
+      letter-spacing: 0.02em;
+      pointer-events: none;
+      text-align: center;
+      padding: 0 20px;
+    }
+
+    .sim-filter-layer.blackout:hover .blackout-wake-hint,
+    .sim-filter-layer.blackout .blackout-wake-hint.show {
+      opacity: 1;
+    }
+
+    /* App Overlay UI inside Simulator */
+    .sim-overlay-anchor {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 25;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .sim-capsule {
+      background: rgba(18, 20, 24, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 999px;
+      padding: 6px 18px;
+      color: #f1f3f4;
+      font-size: 0.96rem;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      cursor: grab;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      transition: transform 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .sim-capsule:hover {
+      border-color: rgba(0, 229, 255, 0.65);
+      transform: translateY(-1px);
+    }
+
+    .sim-capsule:active {
+      cursor: grabbing;
+    }
+
+    .sim-panel {
+      width: min(304px, 82vw);
+      background: rgba(22, 24, 29, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 18px;
+      padding: 13px 15px;
+      box-shadow: 0 18px 46px rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(14px);
+      display: none;
+    }
+
+    .sim-panel.open {
+      display: block;
+      animation: popIn 0.16s ease-out;
+    }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: translateY(-6px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .sim-panel-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .sim-panel-clock {
+      flex: 1;
+      font-size: 1.08rem;
+      font-weight: 700;
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 6px;
+      transition: background 0.15s;
+    }
+
+    .sim-panel-clock:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .sim-chip-btn {
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: #252830;
+      color: #e8eaed;
+      border-radius: 999px;
+      padding: 5px 11px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+
+    .sim-chip-btn:hover {
+      background: #323642;
+    }
+
+    .sim-chip-btn.close {
+      color: #a0a6b0;
+      padding: 5px 9px;
+    }
+
+    .sim-slider-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 8px;
+    }
+
+    .sim-slider-label {
+      width: 64px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #b0b5bd;
+      flex-shrink: 0;
+    }
+
+    .sim-slider-label.amber {
+      color: var(--amber);
+    }
+
+    .sim-slider {
+      flex: 1;
+      accent-color: #e8eaed;
+      cursor: pointer;
+      height: 5px;
+    }
+
+    .sim-slider.amber {
+      accent-color: var(--amber);
+    }
+
+    .sim-slider-val {
+      width: 38px;
+      text-align: right;
+      font-size: 0.8rem;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: #e8eaed;
+    }
+
+    .sim-slider-val.amber {
+      color: var(--amber);
+    }
+
+    .sim-relaunch-bar {
+      position: absolute;
+      bottom: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      display: none;
+    }
+
+    .sim-relaunch-bar.visible {
+      display: block;
+    }
+
+    .sim-relaunch-btn {
+      background: rgba(18, 20, 24, 0.9);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 229, 255, 0.45);
+      border-radius: 999px;
+      padding: 8px 16px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Controls strip below cockpit */
+    .sim-presets {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 14px;
+      padding: 4px 6px 0;
+    }
+
+    .preset-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .preset-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-primary);
+      border-radius: 999px;
+      padding: 7px 14px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .preset-btn:hover {
+      background: rgba(0, 229, 255, 0.12);
+      border-color: rgba(0, 229, 255, 0.4);
+    }
+
+    .sim-status-readout {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .audio-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(52, 211, 153, 0.1);
+      border: 1px solid rgba(52, 211, 153, 0.25);
+      color: var(--emerald);
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+
+    /* Bento Grid Features */
+    .features-section {
+      padding: 40px 0 74px;
+    }
+
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .bento-card {
+      position: relative;
+      padding: 26px;
+      border-radius: 22px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .bento-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(0, 229, 255, 0.35);
+      box-shadow: 0 20px 48px rgba(0, 0, 0, 0.45), 0 0 36px rgba(0, 229, 255, 0.08);
+    }
+
+    .bento-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 13px;
+      display: grid;
+      place-items: center;
+      margin-bottom: 18px;
+      background: rgba(0, 229, 255, 0.1);
+      border: 1px solid rgba(0, 229, 255, 0.24);
+      color: var(--cyan);
+    }
+
+    .bento-icon.amber {
+      background: rgba(255, 183, 77, 0.12);
+      border-color: rgba(255, 183, 77, 0.28);
+      color: var(--amber);
+    }
+
+    .bento-icon.emerald {
+      background: rgba(52, 211, 153, 0.1);
+      border-color: rgba(52, 211, 153, 0.28);
+      color: var(--emerald);
+    }
+
+    .bento-card h3 {
+      font-size: 1.12rem;
+      font-weight: 700;
+      margin-bottom: 9px;
+      letter-spacing: -0.02em;
+    }
+
+    .bento-card p {
+      font-size: 0.92rem;
+      color: var(--text-secondary);
+      line-height: 1.62;
+    }
+
+    /* Install Guide & Download Card */
+    .install-section {
+      padding: 18px 0 88px;
+    }
+
+    .install-box {
+      border-radius: 26px;
+      padding: 36px;
+      background: linear-gradient(145deg, rgba(19, 25, 38, 0.9), rgba(10, 13, 20, 0.95));
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.55);
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin: 28px 0 32px;
+    }
+
+    .step-card {
+      padding: 20px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+    }
+
+    .step-num {
+      display: inline-grid;
+      place-items: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(0, 229, 255, 0.14);
+      border: 1px solid rgba(0, 229, 255, 0.35);
+      color: var(--cyan);
+      font-size: 0.82rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .step-card h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .step-card p {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+    }
+
+    .download-banner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 22px 26px;
+      border-radius: 18px;
+      background: linear-gradient(90deg, rgba(0, 229, 255, 0.09), rgba(255, 183, 77, 0.08));
+      border: 1px solid rgba(0, 229, 255, 0.25);
+    }
+
+    .download-meta h4 {
+      font-size: 1.08rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .download-meta p {
+      font-size: 0.86rem;
+      color: var(--text-secondary);
+    }
+
+    .download-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 28px 0 42px;
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .footer-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+
+    .footer-links a:hover {
+      color: var(--cyan);
+    }
+
+    @media (max-width: 900px) {
+      .bento-grid,
+      .steps-grid {
+        grid-template-columns: 1fr;
+      }
+      .nav-link {
+        display: none;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hero {
+        padding-top: 44px;
+      }
+      .cockpit-bezel {
+        padding: 10px;
+        border-radius: 20px;
+      }
+      .nav-turn-card,
+      .nav-speed-card,
+      .nav-media-card {
+        transform: scale(0.84);
+        transform-origin: top left;
+      }
+      .nav-speed-card {
+        transform-origin: bottom left;
+      }
+      .nav-media-card {
+        transform-origin: bottom right;
+      }
+      .install-box {
+        padding: 22px 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-bg" aria-hidden="true">
+    <div class="grid-layer"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+  </div>
+
+  <header>
+    <div class="container nav-inner">
+      <a class="brand" href="#top">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M14.8 3.6a8.8 8.8 0 1 0 6.6 14.6A7.6 7.6 0 0 1 14.8 3.6Z" fill="#FFB74D"/>
+          </svg>
+        </div>
+        <span>야간 밝기 <small style="color: var(--text-secondary); font-weight: 500;">OttocastDimmer</small></span>
+      </a>
+      <div class="nav-actions">
+        <a class="nav-link" href="#simulator">미리보기</a>
+        <a class="nav-link" href="#features">핵심 기능</a>
+        <a class="nav-link" href="#install">설치 방법</a>
+        <a class="nav-link" href="https://github.com/jeye79/CarPlay_Display" target="_blank" rel="noopener">GitHub</a>
+        <a class="nav-dl-btn" href="./OttocastDimmer.apk" download="OttocastDimmer.apk">APK 다운로드</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="top">
+    <section class="hero container">
+      <div class="pill-badge">
+        <span class="pulse-dot"></span>
+        <span>HYUNDAI NEXO × OTTOCAST PRO 전용</span>
+      </div>
+      <h1>
+        야간 운전 눈부심 제로,<br />
+        <span class="gradient-text">초심플 상단 시계 &amp; 밝기 컨트롤</span>
+      </h1>
+      <p class="subtitle">
+        밝기 조절이 없어 밤마다 눈이 아팠던 오토캐스트 프로 카플레이 디스플레이를 위해 탄생했습니다.
+        복잡한 화면 없이 상단 미니 시계 캡슐 <strong>딱 1개</strong>로 밝기, 블루라이트 차단, 100% 블랙 화면 끄기까지 한 번에 제어하세요.
+      </p>
+
+      <div class="hero-cta-group">
+        <a class="btn-primary-glow" href="./OttocastDimmer.apk" download="OttocastDimmer.apk">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3v12" />
+            <path d="m7 11 5 5 5-5" />
+            <path d="M5 20h14" />
+          </svg>
+          <span>OttocastDimmer.apk 다운로드</span>
+        </a>
+        <a class="btn-secondary-glass" href="#simulator">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="6 4 20 12 6 20 6 4" />
+          </svg>
+          <span>웹에서 바로 체험하기</span>
+        </a>
+        <a class="btn-secondary-glass" href="https://github.com/jeye79/CarPlay_Display" target="_blank" rel="noopener">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 .5A11.5 11.5 0 0 0 .5 12c0 5.08 3.29 9.38 7.86 10.9.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.2 1.77 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.25.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.58.23 2.75.11 3.04.74.8 1.19 1.83 1.19 3.08 0 4.41-2.7 5.39-5.27 5.67.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/>
+          </svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+
+      <div class="spec-strip">
+        <span class="spec-item"><span class="spec-dot"></span>버전 v1.0.0</span>
+        <span class="spec-item"><span class="spec-dot"></span>24.6 KB 초경량 APK</span>
+        <span class="spec-item"><span class="spec-dot"></span>Android 8.0 ~ 14 지원</span>
+        <span class="spec-item"><span class="spec-dot"></span>부팅 자동실행 없음 (원할 때만 실행)</span>
+        <span class="spec-item"><span class="spec-dot"></span>v1 · v2 · v3 정식 서명 완료</span>
+      </div>
+    </section>
+
+    <!-- Live Interactive Cockpit Preview -->
+    <section id="simulator" class="simulator-section container">
+      <div class="section-header">
+        <div class="section-eyebrow">INTERACTIVE PREVIEW</div>
+        <h2 class="section-title">차량 디스플레이 실시간 체험</h2>
+        <p class="section-desc">
+          상단 중앙의 <strong>미니 시계 캡슐을 클릭</strong>해 작업창을 열거나, <strong>캡슐을 좌우로 드래그</strong>해 밝기를 조절해 보세요.
+        </p>
+      </div>
+
+      <div class="cockpit-bezel">
+        <div class="cockpit-screen" id="simScreen">
+          <!-- Mock Navigation Screen -->
+          <div class="nav-ui-layer">
+            <svg class="map-svg" viewBox="0 0 960 510" preserveAspectRatio="xMidYMid slice">
+              <defs>
+                <linearGradient id="roadGlow" x1="0" y1="1" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#00e5ff" />
+                  <stop offset="100%" stop-color="#60a5fa" />
+                </linearGradient>
+              </defs>
+              <!-- Grid roads -->
+              <path d="M0 110 H960 M0 245 H960 M0 390 H960 M170 0 V510 M410 0 V510 M690 0 V510" stroke="rgba(173, 216, 255, 0.16)" stroke-width="8" fill="none"/>
+              <path d="M-40 460 Q250 350 410 265 T860 95" stroke="rgba(96, 165, 250, 0.35)" stroke-width="34" stroke-linecap="round" fill="none"/>
+              <!-- Active Cyan Navigation Route -->
+              <path d="M310 510 L420 340 Q460 280 545 250 L740 165" stroke="url(#roadGlow)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              <!-- Vehicle Arrow -->
+              <polygon points="365,405 390,445 365,435 340,445" fill="#ffffff" stroke="#00e5ff" stroke-width="3"/>
+            </svg>
+
+            <div class="nav-turn-card">
+              <div class="turn-arrow">↱</div>
+              <div class="turn-meta">
+                <strong>350m 앞 우회전</strong>
+                <span>올림픽대로 (김포공항 방면)</span>
+              </div>
+            </div>
+
+            <div class="nav-speed-card">
+              <div class="num">68</div>
+              <div class="unit">km/h</div>
+            </div>
+
+            <div class="nav-media-card">
+              <div class="nav-media-dot"></div>
+              <div>
+                <strong>Night Drive Jazz</strong>
+                <span>내비 안내 및 음악 재생 중</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Filter Layer -->
+          <div class="sim-filter-layer" id="simFilter">
+            <div class="blackout-wake-hint" id="wakeHint">화면 아무 곳이나 한 번 터치하면 즉시 원래 화면으로 복귀합니다</div>
+          </div>
+
+          <!-- Overlay Capsule & Panel -->
+          <div class="sim-overlay-anchor" id="simOverlayAnchor">
+            <div class="sim-capsule" id="simCapsule" title="클릭: 작업창 열기 / 좌우 드래그: 밝기 조절">15:36</div>
+
+            <div class="sim-panel" id="simPanel">
+              <div class="sim-panel-header">
+                <div class="sim-panel-clock" id="simPanelClock" title="터치하여 12/24시간제 전환">15:36</div>
+                <button type="button" class="sim-chip-btn" id="simBlackoutBtn">화면 끄기</button>
+                <button type="button" class="sim-chip-btn close" id="simCloseBtn" title="오버레이 종료">✕</button>
+              </div>
+              <div class="sim-slider-row">
+                <span class="sim-slider-label">밝기</span>
+                <input type="range" class="sim-slider" id="simBrightSlider" min="0" max="100" value="70" />
+                <span class="sim-slider-val" id="simBrightVal">70%</span>
+              </div>
+              <div class="sim-slider-row">
+                <span class="sim-slider-label amber">블루라이트</span>
+                <input type="range" class="sim-slider amber" id="simBlueSlider" min="0" max="100" value="20" />
+                <span class="sim-slider-val amber" id="simBlueVal">20%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Relaunch hint when user hits X -->
+          <div class="sim-relaunch-bar" id="simRelaunchBar">
+            <button type="button" class="sim-relaunch-btn" id="simRelaunchBtn">🌙 앱 아이콘 눌러 상단 시계 다시 띄우기</button>
+          </div>
+        </div>
+
+        <div class="sim-presets">
+          <div class="preset-buttons">
+            <button type="button" class="preset-btn" data-bright="100" data-blue="0">주간 원본 (100%)</button>
+            <button type="button" class="preset-btn" data-bright="50" data-blue="35">야간 추천 (50% / 35%)</button>
+            <button type="button" class="preset-btn" data-bright="15" data-blue="65">심야 눈보호 (15% / 65%)</button>
+            <button type="button" class="preset-btn" id="presetBlackoutBtn">화면 끄기 (완전 블랙)</button>
+          </div>
+          <div class="sim-status-readout">
+            <span class="audio-pill">🔊 내비 음성 · 음악 유지</span>
+            <span id="simReadoutText">밝기 70% · 블루라이트 20%</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Bento Grid -->
+    <section id="features" class="features-section container">
+      <div class="section-header">
+        <div class="section-eyebrow">DESIGNED FOR NIGHT DRIVING</div>
+        <h2 class="section-title">지저분한 UI 없이 꼭 필요한 기능만</h2>
+        <p class="section-desc">운전 시야를 가리지 않도록 1px까지 군더더기를 덜어냈습니다.</p>
+      </div>
+
+      <div class="bento-grid">
+        <article class="bento-card">
+          <div class="bento-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"/>
+              <path d="M12 7v5l3 2"/>
+            </svg>
+          </div>
+          <h3>단 1개의 초심플 시계 캡슐</h3>
+          <p>앱을 실행하면 복잡한 설정 창 없이 화면 맨 위 중앙에 어두운 알약 형태의 시계 캡슐 딱 1개만 깔끔하게 뜹니다. 부팅 자동 실행 없이 필요할 때만 켤 수 있습니다.</p>
+        </article>
+
+        <article class="bento-card">
+          <div class="bento-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14"/>
+              <path d="m12 5 7 7-7 7"/>
+            </svg>
+          </div>
+          <h3>터치 작업창 &amp; 좌우 스와이프 조절</h3>
+          <p>캡슐을 살짝 터치하면 슬림한 작업창이 펼쳐지고 3.5초 뒤 자동으로 접힙니다. 작업창을 열지 않고 캡슐 위에서 손가락을 좌우로 밀어도 즉시 밝기가 조절됩니다.</p>
+        </article>
+
+        <article class="bento-card">
+          <div class="bento-icon amber">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+            </svg>
+          </div>
+          <h3>눈이 편안한 블루라이트 차단</h3>
+          <p>차갑고 눈부신 푸른 빛을 따뜻한 앰버 색감으로 부드럽게 걸러내어, 장거리 야간 주행 시 시신경 피로를 확실하게 줄여줍니다.</p>
+        </article>
+
+        <article class="bento-card">
+          <div class="bento-icon emerald">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+              <line x1="12" y1="2" x2="12" y2="12"/>
+            </svg>
+          </div>
+          <h3>100% 완전 블랙 화면 끄기</h3>
+          <p>내비 음성 안내와 음악은 그대로 유지한 채, 화면 LED 백라이트를 최소로 낮추고 화면 전체를 순수 #000000 블랙으로 덮습니다. 아무 곳이나 1번 터치하면 즉시 복귀합니다.</p>
+        </article>
+
+        <article class="bento-card">
+          <div class="bento-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>
+            </svg>
+          </div>
+          <h3>12/24시간 전환 &amp; 위치 자유 이동</h3>
+          <p>작업창의 시계를 눌러 24시간제(15:36)와 12시간제(오후 3:36)를 전환할 수 있습니다. 캡슐을 0.5초 길게 누르면 상단 원하는 위치로 드래그해 고정할 수 있습니다.</p>
+        </article>
+
+        <article class="bento-card">
+          <div class="bento-icon amber">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="4" width="20" height="14" rx="2"/>
+              <path d="M8 20h8"/>
+            </svg>
+          </div>
+          <h3>내비 터치 100% 통과 · 24.6KB 초경량</h3>
+          <p>Android 12+ 터치 보안 제한을 회피하도록 안전 투명도 상한을 자동 계산해 티맵·카카오내비 조작이 전혀 막히지 않으며, 외부 라이브러리 없이 24.6KB로 가볍게 동작합니다.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Installation & Direct Download -->
+    <section id="install" class="install-section container">
+      <div class="install-box">
+        <div class="section-header" style="margin-bottom: 10px;">
+          <div class="section-eyebrow">3-STEP SETUP</div>
+          <h2 class="section-title">Ottocast Pro 설치 방법</h2>
+          <p class="section-desc">차량 내 오토캐스트 브라우저에서 바로 내려받거나 USB로 설치할 수 있습니다.</p>
+        </div>
+
+        <div class="steps-grid">
+          <div class="step-card">
+            <div class="step-num">1</div>
+            <h4>APK 다운로드</h4>
+            <p>아래 버튼으로 <code>OttocastDimmer.apk</code>를 다운로드합니다. (PC에서 받아 USB로 옮겨도 됩니다)</p>
+          </div>
+          <div class="step-card">
+            <div class="step-num">2</div>
+            <h4>앱 설치 및 실행</h4>
+            <p>오토캐스트 파일 관리자에서 APK를 설치한 뒤, 앱 목록의 <strong>야간 밝기</strong> 아이콘을 터치합니다.</p>
+          </div>
+          <div class="step-card">
+            <div class="step-num">3</div>
+            <h4>권한 1회 허용 후 즉시 사용</h4>
+            <p>최초 1회 <strong>'다른 앱 위에 표시'</strong> 권한을 켜주면, 이후부터는 앱을 누를 때마다 즉시 상단 시계 캡슐이 뜹니다.</p>
+          </div>
+        </div>
+
+        <div class="download-banner">
+          <div class="download-meta">
+            <h4>OttocastDimmer.apk · v1.0.0</h4>
+            <p>패키지명: <code>com.ottocast.dimmer</code> · Android 8.0+ (API 26+) · 용량: 24.6 KB</p>
+          </div>
+          <div class="download-actions">
+            <a class="btn-primary-glow" style="padding: 13px 24px; font-size: 0.96rem;" href="./OttocastDimmer.apk" download="OttocastDimmer.apk">
+              <span>APK 바로 다운로드</span>
+            </a>
+            <a class="btn-secondary-glass" style="padding: 12px 18px; font-size: 0.9rem;" href="./dist/OttocastDimmer.apk" download="OttocastDimmer.apk">
+              <span>보조 링크 (/dist)</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <div>© 2026 OttocastDimmer · 현대 넥소 &amp; Ottocast Pro 야간 드라이빙 유틸리티</div>
+      <div class="footer-links">
+        <a href="./OttocastDimmer.apk" download="OttocastDimmer.apk">APK 다운로드</a>
+        <a href="https://github.com/jeye79/CarPlay_Display" target="_blank" rel="noopener">GitHub 저장소</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const simFilter = document.getElementById("simFilter");
+      const wakeHint = document.getElementById("wakeHint");
+      const simCapsule = document.getElementById("simCapsule");
+      const simPanel = document.getElementById("simPanel");
+      const simPanelClock = document.getElementById("simPanelClock");
+      const simBlackoutBtn = document.getElementById("simBlackoutBtn");
+      const simCloseBtn = document.getElementById("simCloseBtn");
+      const simBrightSlider = document.getElementById("simBrightSlider");
+      const simBrightVal = document.getElementById("simBrightVal");
+      const simBlueSlider = document.getElementById("simBlueSlider");
+      const simBlueVal = document.getElementById("simBlueVal");
+      const simOverlayAnchor = document.getElementById("simOverlayAnchor");
+      const simRelaunchBar = document.getElementById("simRelaunchBar");
+      const simRelaunchBtn = document.getElementById("simRelaunchBtn");
+      const simReadoutText = document.getElementById("simReadoutText");
+      const presetBlackoutBtn = document.getElementById("presetBlackoutBtn");
+
+      let brightness = 70;
+      let blueLight = 20;
+      let use24Hour = true;
+      let isBlackout = false;
+      let isExpanded = false;
+      let showingTransient = false;
+      let transientTimer = null;
+      let autoCollapseTimer = null;
+
+      function formatClock() {
+        const now = new Date();
+        let h = now.getHours();
+        const m = String(now.getMinutes()).padStart(2, "0");
+        if (use24Hour) {
+          return String(h).padStart(2, "0") + ":" + m;
+        }
+        const period = h >= 12 ? "오후" : "오전";
+        h = h % 12 || 12;
+        return period + " " + h + ":" + m;
+      }
+
+      function updateClocks() {
+        const text = formatClock();
+        simPanelClock.textContent = text;
+        if (!showingTransient) {
+          simCapsule.textContent = text;
+        }
+      }
+
+      function applySimulatedFilter() {
+        if (isBlackout) {
+          simFilter.classList.add("blackout");
+          simOverlayAnchor.style.display = "none";
+          simReadoutText.textContent = "화면 끄기 (100% 완전 블랙 · 터치 시 복귀)";
+          setTimeout(() => wakeHint.classList.add("show"), 200);
+          return;
+        }
+
+        simFilter.classList.remove("blackout");
+        wakeHint.classList.remove("show");
+
+        // Mirror DimmerOverlayService.java filter formula
+        const maxSafe = 0.82;
+        const dimFrac = (100 - brightness) / 100;
+        const warmFrac = blueLight / 100;
+        const dimAlpha = dimFrac * (maxSafe * 0.92);
+        const warmAlpha = warmFrac * 0.42;
+        const totalAlpha = Math.min(maxSafe, 1 - (1 - dimAlpha) * (1 - warmAlpha));
+        const denom = dimAlpha + warmAlpha;
+        let warmWeight = (totalAlpha > 0.001 && denom > 0.001)
+          ? (warmAlpha * (1 - dimAlpha * 0.8)) / denom
+          : 0;
+        warmWeight = Math.max(0, Math.min(1, warmWeight));
+
+        const r = Math.round(255 * warmWeight);
+        const g = Math.round(136 * warmWeight);
+        simFilter.style.backgroundColor = `rgb(${r}, ${g}, 0)`;
+        simFilter.style.opacity = totalAlpha.toFixed(3);
+
+        simBrightSlider.value = brightness;
+        simBrightVal.textContent = brightness + "%";
+        simBlueSlider.value = blueLight;
+        simBlueVal.textContent = blueLight + "%";
+        simReadoutText.textContent = `밝기 ${brightness}% · 블루라이트 ${blueLight}%`;
+      }
+
+      function expandPanel() {
+        isExpanded = true;
+        clearTimeout(transientTimer);
+        showingTransient = false;
+        simCapsule.style.display = "none";
+        simPanel.classList.add("open");
+        resetAutoCollapse();
+      }
+
+      function collapsePanel() {
+        isExpanded = false;
+        clearTimeout(autoCollapseTimer);
+        simPanel.classList.remove("open");
+        simCapsule.style.display = "block";
+        updateClocks();
+      }
+
+      function resetAutoCollapse() {
+        clearTimeout(autoCollapseTimer);
+        if (isExpanded) {
+          autoCollapseTimer = setTimeout(collapsePanel, 3800);
+        }
+      }
+
+      function setBlackout(enable) {
+        isBlackout = enable;
+        if (enable) {
+          collapsePanel();
+          simOverlayAnchor.style.display = "none";
+        } else {
+          simOverlayAnchor.style.display = "flex";
+          simRelaunchBar.classList.remove("visible");
+          updateClocks();
+        }
+        applySimulatedFilter();
+      }
+
+      // Capsule Tap vs Horizontal Swipe Brightness
+      let downX = 0;
+      let startBright = brightness;
+      let dragging = false;
+      let moved = false;
+
+      simCapsule.addEventListener("pointerdown", (e) => {
+        dragging = true;
+        moved = false;
+        downX = e.clientX;
+        startBright = brightness;
+        simCapsule.setPointerCapture(e.pointerId);
+      });
+
+      simCapsule.addEventListener("pointermove", (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - downX;
+        if (Math.abs(dx) > 6) {
+          moved = true;
+          brightness = Math.max(0, Math.min(100, startBright + Math.round(dx / 2.2)));
+          showingTransient = true;
+          clearTimeout(transientTimer);
+          simCapsule.textContent = `☀ ${brightness}%`;
+          applySimulatedFilter();
+        }
+      });
+
+      function endCapsulePointer(e) {
+        if (!dragging) return;
+        dragging = false;
+        if (!moved) {
+          expandPanel();
+        } else {
+          transientTimer = setTimeout(() => {
+            showingTransient = false;
+            updateClocks();
+          }, 1000);
+        }
+      }
+
+      simCapsule.addEventListener("pointerup", endCapsulePointer);
+      simCapsule.addEventListener("pointercancel", endCapsulePointer);
+
+      // Panel Controls
+      simPanelClock.addEventListener("click", () => {
+        use24Hour = !use24Hour;
+        updateClocks();
+        resetAutoCollapse();
+      });
+
+      simBrightSlider.addEventListener("input", (e) => {
+        brightness = Number(e.target.value);
+        applySimulatedFilter();
+        resetAutoCollapse();
+      });
+
+      simBlueSlider.addEventListener("input", (e) => {
+        blueLight = Number(e.target.value);
+        applySimulatedFilter();
+        resetAutoCollapse();
+      });
+
+      simBlackoutBtn.addEventListener("click", () => setBlackout(true));
+
+      simCloseBtn.addEventListener("click", () => {
+        collapsePanel();
+        simOverlayAnchor.style.display = "none";
+        simRelaunchBar.classList.add("visible");
+      });
+
+      simRelaunchBtn.addEventListener("click", () => {
+        simRelaunchBar.classList.remove("visible");
+        simOverlayAnchor.style.display = "flex";
+        updateClocks();
+      });
+
+      simFilter.addEventListener("click", () => {
+        if (isBlackout) {
+          setBlackout(false);
+        }
+      });
+
+      // Click outside panel inside screen closes panel
+      document.getElementById("simScreen").addEventListener("pointerdown", (e) => {
+        if (isExpanded && !simOverlayAnchor.contains(e.target)) {
+          collapsePanel();
+        }
+      });
+
+      // Quick Presets
+      document.querySelectorAll(".preset-btn[data-bright]").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          brightness = Number(btn.dataset.bright);
+          blueLight = Number(btn.dataset.blue);
+          if (isBlackout) setBlackout(false);
+          simRelaunchBar.classList.remove("visible");
+          simOverlayAnchor.style.display = "flex";
+          applySimulatedFilter();
+        });
+      });
+
+      presetBlackoutBtn.addEventListener("click", () => {
+        simRelaunchBar.classList.remove("visible");
+        setBlackout(true);
+      });
+
+      updateClocks();
+      applySimulatedFilter();
+      setInterval(updateClocks, 5000);
+    })();
+  </script>
+</body>
+</html>
